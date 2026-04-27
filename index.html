@@ -2,11 +2,13 @@
 <html lang="pt-BR">
 <head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // 1. Configuração (Pegue no painel do Supabase > Settings > API)
-  const supabaseUrl = 'https://smowmmduquzmpqpcuttw.supabase.co/rest/v1/'
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3dtbWR1cXV6bXBxcGN1dHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNzIsImV4cCI6MjA5MjcxODE3Mn0.W4VKnwvlkdNwc0Ib7aRDMRwTlSyqa9pK2o0qWWu_Qj8'
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey)
+  // 1. Configuração corrigida
+const supabaseUrl = 'https://smowmmduquzmpqpcuttw.supabase.co'; // Removido o /rest/v1/
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3dtbWR1cXV6bXBxcGN1dHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNzIsImV4cCI6MjA5MjcxODE3Mn0.W4VKnwvlkdNwc0Ib7aRDMRwTlSyqa9pK2o0qWWu_Qj8';
 
+// Usamos o objeto global 'supabase' da biblioteca para criar a sua conexão
+// Chamamos a sua variável de 'db' para não dar conflito com o nome da biblioteca
+const db = supabase.createClient(supabaseUrl, supabaseKey);
   // 2. Função para salvar a Ficha de Triagem
   async function enviarTriagem(event) {
     event.preventDefault(); // Impede a página de recarregar
@@ -1163,7 +1165,7 @@ function validateForm(tipo){
 
 function getSintomas(cid){return Array.from(document.querySelectorAll('#'+cid+' input:checked')).map(c=>c.value);}
 
- async function submitTriagem() { // Adicionei 'async' aqui no começo
+ async function submitTriagem() {
   const errors = validateForm(currentTipo);
   const banner = document.getElementById('form-error-banner');
 
@@ -1175,93 +1177,80 @@ function getSintomas(cid){return Array.from(document.querySelectorAll('#'+cid+' 
     return;
   }
 
-  // --- O QUE VOCÊ DEVE ADICIONAR ABAIXO ---
-
-  // 1. Coleta os dados do formulário (o objeto 'p' que o site usa)
-  const p = {
-    id: Date.now(),
-    tipo: currentTipo,
-    nome: currentTipo === 'adulto' ? gv('a-nome') : gv('i-nome'),
-    tel: currentTipo === 'adulto' ? gv('a-tel') : gv('i-tel'),
-    email: currentTipo === 'adulto' ? gv('a-email') : gv('i-email'),
-    cidade: currentTipo === 'adulto' ? gv('a-cidade') : gv('i-cidade'),
-    queixa: currentTipo === 'adulto' ? gv('a-queixa') : gv('i-queixa'),
-    sintomas: Array.from(document.querySelectorAll(`#${currentTipo === 'adulto' ? 'a' : 'i'}-sintomas input:checked`)).map(c => c.value),
-    status: 'pendente',
-    data: new Date().toISOString()
-  };
-
+  banner.style.display = 'none';
   showToast('🚀 Enviando para o banco de dados...');
 
-  // 2. ENVIO PARA O SUPABASE
-  const { error } = await supabase
-    .from('fichas_triagem')
-    .insert([
-      {
-        nome: p.nome,
-        tipo: p.tipo,
-        tel: p.tel,
-        email: p.email,
-        cidade: p.cidade,
-        queixa: p.queixa,
-        sintomas: p.sintomas,
-        status: p.status
-      }
-    ]);
-
-  if (error) {
-    console.error('Erro:', error);
-    showToast('❌ Erro ao salvar online: ' + error.message);
-  } else {
-    showToast('✅ Ficha salva na nuvem com sucesso!');
-    
-    // 3. Continua o fluxo original do seu site
-    patients.push(p);
-    saveData();
-    renderPatients();
-    setScreen('home');
-  }
-}
-
-  banner.style.display='none';
+  // 1. Criar o objeto p com TODOS os dados do formulário
   let p;
-
-  if(currentTipo==='adulto'){
-    p={id:uid(),tipo:'Adulto',
-      nome:gv('a-nome'),nasc:gv('a-nasc'),cpf:gv('a-cpf'),tel:gv('a-tel'),
-      email:gv('a-email'),sexo:gv('a-sexo'),ecivil:gv('a-ecivil'),cidade:gv('a-cidade'),
-      queixa:gv('a-queixa'),terapia:gv('a-terapia'),med:gv('a-med'),
-      sintomas:getSintomas('a-sintomas'),religiao:gv('a-religiao'),
-      renda:gv('a-renda'),auxilio:gv('a-auxilio'),
-      motivacao:gv('a-motivacao'),expectativa:gv('a-expectativa'),
-      dias:gv('a-dias'),periodo:gv('a-periodo'),preferenciaT:gv('a-preferencia-terapeuta'),
-      data:new Date().toLocaleDateString('pt-BR'),status:'andamento',sessoes:0,
-      devolutiva:'',obs:'',therapistId:null,devolutivas:{}};
-    // limpa
-    ['a-nome','a-nasc','a-cpf','a-tel','a-email','a-queixa','a-cidade','a-motivacao','a-expectativa'].forEach(id=>document.getElementById(id).value='');
-    ['a-sexo','a-ecivil','a-terapia','a-med','a-religiao','a-renda','a-auxilio','a-dias','a-periodo','a-preferencia-terapeuta'].forEach(id=>document.getElementById(id).value='');
-    document.querySelectorAll('#a-sintomas input').forEach(c=>c.checked=false);
+  if (currentTipo === 'adulto') {
+    p = {
+      id: uid(),
+      tipo: 'Adulto',
+      nome: gv('a-nome'), nasc: gv('a-nasc'), cpf: gv('a-cpf'), tel: gv('a-tel'),
+      email: gv('a-email'), sexo: gv('a-sexo'), ecivil: gv('a-ecivil'), cidade: gv('a-cidade'),
+      queixa: gv('a-queixa'), terapia: gv('a-terapia'), med: gv('a-med'),
+      sintomas: getSintomas('a-sintomas'), religiao: gv('a-religiao'),
+      renda: gv('a-renda'), auxilio: gv('a-auxilio'),
+      motivacao: gv('a-motivacao'), expectativa: gv('a-expectativa'),
+      dias: gv('a-dias'), periodo: gv('a-periodo'), preferenciaT: gv('a-preferencia-terapeuta'),
+      data: new Date().toLocaleDateString('pt-BR'), status: 'pendente', sessoes: 0
+    };
   } else {
-    p={id:uid(),tipo:'Infantil',
-      nome:gv('i-nome'),nasc:gv('i-nasc'),sexo:gv('i-sexo'),escola:gv('i-escola'),
-      reside:gv('i-reside'),cidade:gv('i-cidade'),resp:gv('i-resp'),parent:gv('i-parent'),
-      tel:gv('i-tel'),email:gv('i-email'),queixa:gv('i-queixa'),hist:gv('i-hist'),
-      sintomas:getSintomas('i-sintomas'),religiao:gv('i-religiao'),
-      renda:gv('i-renda'),auxilio:gv('i-auxilio'),
-      motivacao:gv('i-motivacao'),expectativa:gv('i-expectativa'),
-      preferenciaT:gv('i-preferencia-terapeuta'),
-      data:new Date().toLocaleDateString('pt-BR'),status:'andamento',sessoes:0,
-      devolutiva:'',obs:'',therapistId:null,devolutivas:{}};
-    ['i-nome','i-nasc','i-escola','i-resp','i-tel','i-email','i-queixa','i-hist','i-cidade','i-motivacao','i-expectativa'].forEach(id=>document.getElementById(id).value='');
-    ['i-sexo','i-reside','i-parent','i-religiao','i-renda','i-auxilio','i-preferencia-terapeuta'].forEach(id=>document.getElementById(id).value='');
-    document.querySelectorAll('#i-sintomas input').forEach(c=>c.checked=false);
+    p = {
+      id: uid(),
+      tipo: 'Infantil',
+      nome: gv('i-nome'), nasc: gv('i-nasc'), sexo: gv('i-sexo'), escola: gv('i-escola'),
+      reside: gv('i-reside'), cidade: gv('i-cidade'), resp: gv('i-resp'), parent: gv('i-parent'),
+      tel: gv('i-tel'), email: gv('i-email'), queixa: gv('i-queixa'), hist: gv('i-hist'),
+      sintomas: getSintomas('i-sintomas'), religiao: gv('i-religiao'),
+      renda: gv('i-renda'), auxilio: gv('i-auxilio'),
+      motivacao: gv('i-motivacao'), expectativa: gv('i-expectativa'),
+      preferenciaT: gv('i-preferencia-terapeuta'),
+      data: new Date().toLocaleDateString('pt-BR'), status: 'pendente', sessoes: 0
+    };
   }
 
-  patients.push(p);
-  addAdminNotification('📋','ni-yellow','Nova ficha de triagem recebida',p.nome+' ('+p.tipo+') enviou uma ficha de triagem.');
-  saveData();
-  showToast('Ficha enviada com sucesso!');
-  setTimeout(goHome,1600);
+  // 2. Tentar enviar para o Supabase
+  try {
+    const { error } = await db
+      .from('fichas_triagem')
+      .insert([
+        {
+          nome: p.nome,
+          tipo: p.tipo,
+          tel: p.tel,
+          email: p.email,
+          cidade: p.cidade,
+          queixa: p.queixa,
+          sintomas: p.sintomas,
+          status: p.status
+        }
+      ]);
+
+    if (error) throw error;
+
+    // 3. SE DEU CERTO: Salva localmente e limpa tudo
+    patients.push(p);
+    addAdminNotification('📋', 'ni-yellow', 'Nova ficha recebida', p.nome + ' (' + p.tipo + ') enviou uma ficha.');
+    saveData();
+    
+    // Limpeza dos campos (Adulto)
+    if (currentTipo === 'adulto') {
+      ['a-nome', 'a-nasc', 'a-cpf', 'a-tel', 'a-email', 'a-queixa', 'a-cidade', 'a-motivacao', 'a-expectativa'].forEach(id => document.getElementById(id).value = '');
+      document.querySelectorAll('#a-sintomas input').forEach(c => c.checked = false);
+    } else {
+      // Limpeza dos campos (Infantil)
+      ['i-nome', 'i-nasc', 'i-escola', 'i-resp', 'i-tel', 'i-email', 'i-queixa', 'i-hist', 'i-cidade', 'i-motivacao', 'i-expectativa'].forEach(id => document.getElementById(id).value = '');
+      document.querySelectorAll('#i-sintomas input').forEach(c => c.checked = false);
+    }
+
+    showToast('✅ Ficha enviada com sucesso!');
+    setTimeout(goHome, 1600);
+
+  } catch (err) {
+    console.error('Erro detalhado:', err);
+    showToast('❌ Erro ao salvar online: ' + err.message);
+  }
 }
 
 // ══ CALENDÁRIO ══
