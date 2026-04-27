@@ -1,36 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // 1. Configuração corrigida
-const supabaseUrl = 'https://smowmmduquzmpqpcuttw.supabase.co'; // Removido o /rest/v1/
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3dtbWR1cXV6bXBxcGN1dHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNzIsImV4cCI6MjA5MjcxODE3Mn0.W4VKnwvlkdNwc0Ib7aRDMRwTlSyqa9pK2o0qWWu_Qj8';
-
-// Usamos o objeto global 'supabase' da biblioteca para criar a sua conexão
-// Chamamos a sua variável de 'db' para não dar conflito com o nome da biblioteca
-const db = supabase.createClient(supabaseUrl, supabaseKey);
-  // 2. Função para salvar a Ficha de Triagem
-  async function enviarTriagem(event) {
-    event.preventDefault(); // Impede a página de recarregar
-
-    // Pega os valores dos campos do seu formulário
-    const nomePaciente = document.getElementById('nome').value;
-    const motivoConsulta = document.getElementById('motivo').value;
-
-    const { data, error } = await supabase
-      .from('fichas_triagem') // Nome da tabela que você vai criar
-      .insert([
-        { nome: nomePaciente, motivo: motivoConsulta }
-      ]);
-
-    if (error) {
-      alert('Erro ao salvar: ' + error.message);
-    } else {
-      alert('Ficha enviada com sucesso! O terapeuta entrará em contato.');
-      document.getElementById('seu-formulario-id').reset(); // Limpa o formulário
-    }
-  }
-</script>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'https://smowmmduquzmpqpcuttw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3dtbWR1cXV6bXBxcGN1dHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNzIsImV4cCI6MjA5MjcxODE3Mn0.W4VKnwvlkdNwc0Ib7aRDMRwTlSyqa9pK2o0qWWu_Qj8';
+    const db = supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Transformar</title>
@@ -1211,23 +1187,23 @@ function getSintomas(cid){return Array.from(document.querySelectorAll('#'+cid+' 
   }
 
   // 2. Tentar enviar para o Supabase
-  try {
-    const { error } = await db
-      .from('fichas_triagem')
-      .insert([
-        {
-          nome: p.nome,
-          tipo: p.tipo,
-          tel: p.tel,
-          email: p.email,
-          cidade: p.cidade,
-          queixa: p.queixa,
-          sintomas: p.sintomas,
-          status: p.status
-        }
-      ]);
+try {
+  const { error } = await db // <--- Verifique se aqui diz 'db'
+    .from('fichas_triagem')
+    .insert([
+      {
+        nome: p.nome,
+        tipo: p.tipo,
+        tel: p.tel,
+        email: p.email,
+        cidade: p.cidade,
+        queixa: p.queixa,
+        sintomas: p.sintomas,
+        status: p.status
+      }
+    ]);
 
-    if (error) throw error;
+  if (error) throw error;
 
     // 3. SE DEU CERTO: Salva localmente e limpa tudo
     patients.push(p);
