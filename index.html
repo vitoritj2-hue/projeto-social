@@ -632,46 +632,56 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <button class="tab-btn" onclick="switchTab('admin','agenda',this);initCal('admin')">Agenda</button>
     <button class="tab-btn" onclick="switchTab('admin','relatorio',this);renderRelatorioList('admin')">Relatórios</button>
     <button class="tab-btn" onclick="switchTab('admin','contrato',this);populateContractSelect('admin')">Contrato</button>
+ </div> 
+
+<div id="admin-dashboard" class="page active">
+  <div class="page-header">
+    <h2 class="page-title">Visão Geral</h2>
   </div>
-  <div class="page-content">
-    <div class="page active" id="page-admin-dashboard">
-      <div class="page-header"><div class="page-title">Dashboard</div></div>
-      <div class="reset-banner"><span>Dados salvos localmente</span><button class="btn-danger" onclick="confirmReset()">Limpar tudo</button></div>
-      <div class="metrics-row">
-        <div class="metric-card"><div class="metric-label">Pacientes</div><div class="metric-value" id="m-total">0</div><div class="metric-accent"></div></div>
-        <div class="metric-card"><div class="metric-label">Andamento</div><div class="metric-value" id="m-andamento">0</div><div class="metric-accent"></div></div>
-        <div class="metric-card"><div class="metric-label">Finalizados</div><div class="metric-value" id="m-final">0</div><div class="metric-accent"></div></div>
-        <div class="metric-card"><div class="metric-label">Terapeutas</div><div class="metric-value" id="m-terapeutas">0</div><div class="metric-accent"></div></div>
-        <div class="metric-card"><div class="metric-label">Agendamentos</div><div class="metric-value" id="m-agend">0</div><div class="metric-accent"></div></div>
-      </div>
-      <div class="search-bar">
-        <div class="search-row">
-          <div class="search-input-wrap"><span class="search-icon">⌕</span><input type="text" id="search-q" placeholder="Buscar por nome, queixa, sintoma..." oninput="applyFilters()"></div>
-          <button class="btn-primary" onclick="openAssign()">Atribuir Paciente</button>
-        </div>
-        <div class="search-filters">
-          <span class="filter-label">Status:</span>
-          <span class="filter-chip active-all" id="chip-all" onclick="setStatusFilter('all')">Todos</span>
-          <span class="filter-chip" id="chip-andamento" onclick="setStatusFilter('andamento')">Andamento</span>
-          <span class="filter-chip" id="chip-finalizado" onclick="setStatusFilter('finalizado')">Finalizado</span>
-          <span class="filter-chip" id="chip-imprevisto" onclick="setStatusFilter('imprevisto')">Imprevisto</span>
-          <span class="filter-chip" id="chip-obs" onclick="setStatusFilter('obs')">Observação</span>
-        </div>
-        <div class="search-filters" style="margin-top:6px">
-          <span class="filter-label">Tipo:</span>
-          <select class="filter-select" id="filter-tipo" onchange="applyFilters()"><option value="">Todos</option><option value="Adulto">Adulto</option><option value="Infantil">Infantil</option></select>
-          <span class="filter-label" style="margin-left:6px">Terapeuta:</span>
-          <select class="filter-select" id="filter-terapeuta" onchange="applyFilters()"><option value="">Todos</option><option value="none">Sem terapeuta</option></select>
-          <span class="filter-label" style="margin-left:6px">Sessões:</span>
-          <select class="filter-select" id="filter-sessoes" onchange="applyFilters()"><option value="">Qualquer</option><option value="0">0</option><option value="1-3">1–3</option><option value="4-5">4–5</option><option value="6">Concluído</option></select>
-        </div>
-        <div class="search-info"><span id="search-results-count">Mostrando todos</span><button class="clear-btn" onclick="clearFilters()">Limpar filtros</button></div>
-      </div>
-      <div class="data-card">
-        <div class="data-card-header"><span class="data-card-title" id="table-count-label">Pacientes</span><button class="btn-secondary" onclick="exportCSV()" style="font-size:.76rem;padding:6px 14px">Exportar CSV</button></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Paciente</th><th>Terapeuta</th><th>Sessões</th><th>Status</th><th>Ações</th></tr></thead><tbody id="admin-table-body"></tbody></table></div>
-      </div>
+
+  <div class="metrics-row"> <div class="stat-card">
+      <h3>Pacientes Ativos</h3>
+      <div class="stat-value" id="dash-ativos">0</div>
     </div>
+    <div class="stat-card">
+      <h3>Sessões este Mês</h3>
+      <div class="stat-value" id="dash-sessoes">0</div>
+    </div>
+    <div class="stat-card">
+      <h3>Triagens Pendentes</h3>
+      <div class="stat-value" id="dash-triagens">0</div>
+    </div>
+  </div>
+</div>
+
+<div id="admin-fichas" class="page">
+  <div class="search-bar">
+    <div class="search-filters">
+       <span class="filter-label">Tipo:</span>
+       <select class="filter-select" id="filter-tipo" onchange="applyFilters()">...</select>
+       </div>
+    <div class="search-info">
+      <span id="search-results-count">Mostrando todos</span>
+      <button class="clear-btn" onclick="clearFilters()">Limpar filtros</button>
+    </div>
+  </div>
+
+  <div class="data-card">
+    <div class="data-card-header">
+      <span class="data-card-title">Pacientes</span>
+      <button class="btn-secondary" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Paciente</th><th>Terapeuta</th><th>Sessões</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="admin-table-body">
+          </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
     <div class="page" id="page-admin-fichas">
       <div class="page-header"><div class="page-title">Fichas de Triagem</div></div>
@@ -1040,18 +1050,27 @@ function avancarTriagem(){
 function goToScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if(id==='screen-admin')refreshAdmin();
-  if(id==='screen-therapist')refreshTherapist();
+  
+  // Mude de refreshAdmin para loadAdminData
+  if(id==='screen-admin') loadAdminData(); 
+  
+  if(id==='screen-therapist') refreshTherapist();
 }
-function switchTab(scope,page,btn){
-  const screenId=scope==='admin'?'screen-admin':'screen-therapist';
-  const prefix=scope==='admin'?'admin':'t';
-  const tabsId=scope==='admin'?'admin-tabs':'therapist-tabs';
-  document.querySelectorAll('#'+screenId+' .page').forEach(p=>p.classList.remove('active'));
-  const pg=document.getElementById('page-'+prefix+'-'+page);
-  if(pg)pg.classList.add('active');
-  document.getElementById(tabsId).querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
+function switchTab(group, tabId, btn) {
+  // ADICIONE ESTA LINHA AQUI:
+  if (group === 'admin') loadAdminData();
+
+  // Abaixo segue o seu código original...
+  const container = document.getElementById(`${group}-tabs`);
+  if (!container) return;
+  const btns = container.querySelectorAll('.tab-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const pages = document.querySelectorAll(`[id^="${group}-"]`);
+  pages.forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(`${group}-${tabId}`);
+  if (target) target.classList.add('active');
 }
 function closeOverlay(id){document.getElementById(id).classList.remove('open');}
 
@@ -1594,6 +1613,57 @@ document.addEventListener('click',e=>{if(!e.target.closest('#dots-btn')&&!e.targ
   calState.admin.selected=dateKey(today.getFullYear(),today.getMonth(),today.getDate());
   calState.t.selected=dateKey(today.getFullYear(),today.getMonth(),today.getDate());
 })();
+async function loadAdminData() {
+  try {
+    // Busca todos os dados da tabela no Supabase
+    const { data, error } = await db.from('fichas_triagem').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    // --- 1. ATUALIZA OS CARDS (DASHBOARD) ---
+    document.getElementById('dash-triagens').textContent = data.length;
+    document.getElementById('dash-ativos').textContent = data.filter(p => p.status === 'Ativo').length;
+    const totalSessoes = data.reduce((acc, p) => acc + (Number(p.sessoes_concluidas) || 0), 0);
+    document.getElementById('dash-sessoes').textContent = totalSessoes;
+
+    // --- 2. PREENCHE A TABELA DE PACIENTES (admin-table-body) ---
+    const adminTable = document.getElementById('admin-table-body');
+    if (adminTable) {
+      adminTable.innerHTML = data.map(p => `
+        <tr>
+          <td>
+            <div style="font-weight:500">${p.nome}</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5)">${p.tipo_ficha}</div>
+          </td>
+          <td>${p.terapeuta_pref || 'Não atribuído'}</td>
+          <td>
+            <div style="font-size:0.75rem;margin-bottom:4px">${p.sessoes_concluidas || 0}/12</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${((p.sessoes_concluidas || 0)/12)*100}%"></div></div>
+          </td>
+          <td><span class="status-badge status-${(p.status || 'pendente').toLowerCase()}">${p.status || 'Pendente'}</span></td>
+          <td><button class="btn-secondary" style="padding:4px 8px" onclick="openPatientDetails('${p.id}')">Ver</button></td>
+        </tr>
+      `).join('');
+    }
+
+    // --- 3. PREENCHE A TABELA DE FICHAS (fichas-table-body) ---
+    const fichasTable = document.getElementById('fichas-table-body');
+    if (fichasTable) {
+      fichasTable.innerHTML = data.map(p => `
+        <tr>
+          <td>${p.nome}</td>
+          <td>${p.tipo_ficha}</td>
+          <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
+          <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.queixa || '-'}</td>
+          <td>${p.terapeuta_pref || '-'}</td>
+          <td><button class="btn-secondary" onclick="viewFullFicha('${p.id}')">Abrir</button></td>
+        </tr>
+      `).join('');
+    }
+
+  } catch (err) {
+    console.error("Erro ao carregar dados do admin:", err);
+  }
+}
 </script>
 </body>
 </html>
