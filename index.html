@@ -632,56 +632,46 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <button class="tab-btn" onclick="switchTab('admin','agenda',this);initCal('admin')">Agenda</button>
     <button class="tab-btn" onclick="switchTab('admin','relatorio',this);renderRelatorioList('admin')">Relatórios</button>
     <button class="tab-btn" onclick="switchTab('admin','contrato',this);populateContractSelect('admin')">Contrato</button>
- </div> 
-
-<div id="admin-dashboard" class="page active">
-  <div class="page-header">
-    <h2 class="page-title">Visão Geral</h2>
   </div>
-
-  <div class="metrics-row"> <div class="stat-card">
-      <h3>Pacientes Ativos</h3>
-      <div class="stat-value" id="dash-ativos">0</div>
+  <div class="page-content">
+    <div class="page active" id="page-admin-dashboard">
+      <div class="page-header"><div class="page-title">Dashboard</div></div>
+      <div class="reset-banner"><span>Dados salvos localmente</span><button class="btn-danger" onclick="confirmReset()">Limpar tudo</button></div>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-label">Pacientes</div><div class="metric-value" id="m-total">0</div><div class="metric-accent"></div></div>
+        <div class="metric-card"><div class="metric-label">Andamento</div><div class="metric-value" id="m-andamento">0</div><div class="metric-accent"></div></div>
+        <div class="metric-card"><div class="metric-label">Finalizados</div><div class="metric-value" id="m-final">0</div><div class="metric-accent"></div></div>
+        <div class="metric-card"><div class="metric-label">Terapeutas</div><div class="metric-value" id="m-terapeutas">0</div><div class="metric-accent"></div></div>
+        <div class="metric-card"><div class="metric-label">Agendamentos</div><div class="metric-value" id="m-agend">0</div><div class="metric-accent"></div></div>
+      </div>
+      <div class="search-bar">
+        <div class="search-row">
+          <div class="search-input-wrap"><span class="search-icon">⌕</span><input type="text" id="search-q" placeholder="Buscar por nome, queixa, sintoma..." oninput="applyFilters()"></div>
+          <button class="btn-primary" onclick="openAssign()">Atribuir Paciente</button>
+        </div>
+        <div class="search-filters">
+          <span class="filter-label">Status:</span>
+          <span class="filter-chip active-all" id="chip-all" onclick="setStatusFilter('all')">Todos</span>
+          <span class="filter-chip" id="chip-andamento" onclick="setStatusFilter('andamento')">Andamento</span>
+          <span class="filter-chip" id="chip-finalizado" onclick="setStatusFilter('finalizado')">Finalizado</span>
+          <span class="filter-chip" id="chip-imprevisto" onclick="setStatusFilter('imprevisto')">Imprevisto</span>
+          <span class="filter-chip" id="chip-obs" onclick="setStatusFilter('obs')">Observação</span>
+        </div>
+        <div class="search-filters" style="margin-top:6px">
+          <span class="filter-label">Tipo:</span>
+          <select class="filter-select" id="filter-tipo" onchange="applyFilters()"><option value="">Todos</option><option value="Adulto">Adulto</option><option value="Infantil">Infantil</option></select>
+          <span class="filter-label" style="margin-left:6px">Terapeuta:</span>
+          <select class="filter-select" id="filter-terapeuta" onchange="applyFilters()"><option value="">Todos</option><option value="none">Sem terapeuta</option></select>
+          <span class="filter-label" style="margin-left:6px">Sessões:</span>
+          <select class="filter-select" id="filter-sessoes" onchange="applyFilters()"><option value="">Qualquer</option><option value="0">0</option><option value="1-3">1–3</option><option value="4-5">4–5</option><option value="6">Concluído</option></select>
+        </div>
+        <div class="search-info"><span id="search-results-count">Mostrando todos</span><button class="clear-btn" onclick="clearFilters()">Limpar filtros</button></div>
+      </div>
+      <div class="data-card">
+        <div class="data-card-header"><span class="data-card-title" id="table-count-label">Pacientes</span><button class="btn-secondary" onclick="exportCSV()" style="font-size:.76rem;padding:6px 14px">Exportar CSV</button></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Paciente</th><th>Terapeuta</th><th>Sessões</th><th>Status</th><th>Ações</th></tr></thead><tbody id="admin-table-body"></tbody></table></div>
+      </div>
     </div>
-    <div class="stat-card">
-      <h3>Sessões este Mês</h3>
-      <div class="stat-value" id="dash-sessoes">0</div>
-    </div>
-    <div class="stat-card">
-      <h3>Triagens Pendentes</h3>
-      <div class="stat-value" id="dash-triagens">0</div>
-    </div>
-  </div>
-</div>
-
-<div id="admin-fichas" class="page">
-  <div class="search-bar">
-    <div class="search-filters">
-       <span class="filter-label">Tipo:</span>
-       <select class="filter-select" id="filter-tipo" onchange="applyFilters()">...</select>
-       </div>
-    <div class="search-info">
-      <span id="search-results-count">Mostrando todos</span>
-      <button class="clear-btn" onclick="clearFilters()">Limpar filtros</button>
-    </div>
-  </div>
-
-  <div class="data-card">
-    <div class="data-card-header">
-      <span class="data-card-title">Pacientes</span>
-      <button class="btn-secondary" onclick="exportCSV()">Exportar CSV</button>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead>
-          <tr><th>Paciente</th><th>Terapeuta</th><th>Sessões</th><th>Status</th><th>Ações</th></tr>
-        </thead>
-        <tbody id="admin-table-body">
-          </tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
     <div class="page" id="page-admin-fichas">
       <div class="page-header"><div class="page-title">Fichas de Triagem</div></div>
@@ -1050,27 +1040,18 @@ function avancarTriagem(){
 function goToScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  
-  // Mude de refreshAdmin para loadAdminData
-  if(id==='screen-admin') loadAdminData(); 
-  
-  if(id==='screen-therapist') refreshTherapist();
+  if(id==='screen-admin')refreshAdmin();
+  if(id==='screen-therapist')refreshTherapist();
 }
-function switchTab(group, tabId, btn) {
-  // ADICIONE ESTA LINHA AQUI:
-  if (group === 'admin') loadAdminData();
-
-  // Abaixo segue o seu código original...
-  const container = document.getElementById(`${group}-tabs`);
-  if (!container) return;
-  const btns = container.querySelectorAll('.tab-btn');
-  btns.forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  const pages = document.querySelectorAll(`[id^="${group}-"]`);
-  pages.forEach(p => p.classList.remove('active'));
-  const target = document.getElementById(`${group}-${tabId}`);
-  if (target) target.classList.add('active');
+function switchTab(scope,page,btn){
+  const screenId=scope==='admin'?'screen-admin':'screen-therapist';
+  const prefix=scope==='admin'?'admin':'t';
+  const tabsId=scope==='admin'?'admin-tabs':'therapist-tabs';
+  document.querySelectorAll('#'+screenId+' .page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+prefix+'-'+page);
+  if(pg)pg.classList.add('active');
+  document.getElementById(tabsId).querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
 }
 function closeOverlay(id){document.getElementById(id).classList.remove('open');}
 
@@ -1602,68 +1583,59 @@ document.addEventListener('click',e=>{if(!e.target.closest('.notif-panel')&&!e.t
 function exportCSV(){if(!patients.length){showToast('Nenhum paciente para exportar.');return;}const headers=['Nome','Tipo','Sexo','Data Entrada','Telefone','E-mail','Cidade','Queixa','Sintomas','Religião','Renda','Auxílio','Motivação','Expectativa','Terapeuta','Sessões','Status'];const rows=patients.map(p=>{const t=therapists.find(x=>x.id===p.therapistId);const sl={andamento:'Em Andamento',finalizado:'Finalizado',imprevisto:'Imprevisto',obs:'Observação'}[p.status]||p.status;return[p.nome,p.tipo,p.sexo||'—',p.data,p.tel,p.email||'',p.cidade||'','"'+p.queixa.replace(/"/g,'""')+'"','"'+(p.sintomas||[]).join(', ')+'"',p.religiao||'',p.renda||'',p.auxilio||'','"'+(p.motivacao||'').replace(/"/g,'""')+'"','"'+(p.expectativa||'').replace(/"/g,'""')+'"',t?t.nome:'Não atribuído',p.sessoes+'/6',sl];});const csv=[headers,...rows].map(r=>r.join(';')).join('\n');const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pacientes_transformar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';a.click();URL.revokeObjectURL(url);showToast('CSV exportado!');}
 function exportContractPDF(scope){const pfx=scope==='admin'?'ac':'tc';const nome=document.getElementById(pfx+'-nome')?.value||'—';const terapeuta=document.getElementById(pfx+'-terapeuta')?.value||'—';const data=document.getElementById(pfx+'-data')?.value||'';const valor=document.getElementById(pfx+'-valor')?.value||'—';const tel=document.getElementById(pfx+'-tel')?.value||'—';const email=document.getElementById(pfx+'-email')?.value||'—';const sp=document.getElementById(pfx+'-sign-paciente')?.textContent||'Paciente / Responsável';const st=scope==='admin'?'Assinatura do(a) Terapeuta':(document.getElementById('tc-sign-terapeuta')?.textContent||'Assinatura do(a) Terapeuta');const df=data?data.split('-').reverse().join('/'):'___/___/______';const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Georgia,serif;color:#1a1a2e;background:white;padding:40px 60px;font-size:13px;line-height:1.7}.header{text-align:center;margin-bottom:32px;padding-bottom:20px;border-bottom:2px solid #1a1a2e}.logo-line{width:40px;height:3px;background:linear-gradient(90deg,#4f8ef7,#2dd4aa);margin:0 auto 14px;border-radius:2px}h1{font-size:18px;font-weight:700;margin-bottom:4px}.sub{font-size:11px;color:#555;margin-bottom:2px}.sub2{font-size:10px;color:#4f8ef7;font-style:italic}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0;padding:16px;background:#f8fafc;border:1px solid #e0e8f0;border-radius:6px}.field label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;display:block;margin-bottom:3px}.field span{font-size:12px;font-weight:600;color:#1a1a2e;border-bottom:1px solid #cdd5e0;display:block;padding-bottom:4px}h3{font-size:12px;font-weight:700;color:#1a1a2e;margin:18px 0 5px;padding-left:8px;border-left:3px solid #4f8ef7}p{font-size:12px;color:#444;margin-left:8px}.sign-area{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sign-block{text-align:center}.sign-line{border-bottom:1.5px solid #1a1a2e;margin-bottom:8px;height:44px}.sign-label{font-size:11px;color:#666}.footer{margin-top:32px;text-align:center;font-size:9px;color:#aaa;border-top:1px solid #e0e8f0;padding-top:12px}</style></head><body><div class="header"><div class="logo-line"></div><h1>Contrato de Prestação de Serviços Terapêuticos</h1><p class="sub">Projeto Social Transformar</p><p class="sub2">Abordagem Cristã</p></div><div class="fields"><div class="field"><label>Paciente</label><span>${nome}</span></div><div class="field"><label>Terapeuta</label><span>${terapeuta}</span></div><div class="field"><label>Data de Início</label><span>${df}</span></div><div class="field"><label>Valor por Sessão</label><span>R$ ${valor}</span></div><div class="field"><label>Telefone</label><span>${tel}</span></div><div class="field"><label>E-mail</label><span>${email}</span></div></div><h3>1. Objeto</h3><p>Prestação de serviços de psicoterapia pelo período de <strong>6 sessões</strong> individuais de 50 minutos cada.</p><h3>2. Modalidade</h3><p>Presencial ou online, conforme acordado entre as partes.</p><h3>3. Cancelamento</h3><p>Comunicar com no mínimo 24 horas de antecedência. Ausências sem aviso serão cobradas integralmente.</p><h3>4. Sigilo</h3><p>Sigilo absoluto conforme o Código de Ética Profissional do(a) Psicólogo(a).</p><h3>5. Renovação</h3><p>Ao término das 6 sessões, as partes poderão avaliar a continuidade mediante novo contrato.</p><div class="sign-area"><div class="sign-block"><div class="sign-line"></div><div class="sign-label">${sp}</div></div><div class="sign-block"><div class="sign-line"></div><div class="sign-label">${st}</div></div></div><div class="footer">Projeto Social Transformar · Abordagem Cristã · ${new Date().toLocaleDateString('pt-BR')}</div></body></html>`;const win=window.open('','_blank');if(!win){showToast('Permita pop-ups para gerar o PDF.');return;}win.document.write(html);win.document.close();win.onload=()=>win.print();showToast('Abrindo para impressão/PDF...');}
 
-// ══ UTILS ══
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
-function toggleDotsMenu(){const menu=document.getElementById('dots-menu'),btn=document.getElementById('dots-btn');const isOpen=menu.style.display==='block';menu.style.display=isOpen?'none':'block';btn.style.color=isOpen?'rgba(255,255,255,.35)':'white';btn.style.background=isOpen?'rgba(255,255,255,.06)':'rgba(255,255,255,.12)';}
-function closeDotsMenu(){const menu=document.getElementById('dots-menu'),btn=document.getElementById('dots-btn');menu.style.display='none';btn.style.color='rgba(255,255,255,.35)';btn.style.background='rgba(255,255,255,.06)';}
-document.addEventListener('click',e=>{if(!e.target.closest('#dots-btn')&&!e.target.closest('#dots-menu'))closeDotsMenu();});
-
-(async()=>{
-  await loadData();
-  calState.admin.selected=dateKey(today.getFullYear(),today.getMonth(),today.getDate());
-  calState.t.selected=dateKey(today.getFullYear(),today.getMonth(),today.getDate());
-})();
-async function loadAdminData() {
+// ══ PUXAR DADOS DO SUPABASE PARA O PAINEL ADMIN ══
+async function carregarFichasDoBanco() {
   try {
-    // Busca todos os dados da tabela no Supabase
-    const { data, error } = await db.from('fichas_triagem').select('*').order('created_at', { ascending: false });
+    showToast('🔄 Sincronizando com o banco...');
+    const { data, error } = await db
+      .from('fichas_triagem')
+      .select('*'); 
+
     if (error) throw error;
 
-    // --- 1. ATUALIZA OS CARDS (DASHBOARD) ---
-    document.getElementById('dash-triagens').textContent = data.length;
-    document.getElementById('dash-ativos').textContent = data.filter(p => p.status === 'Ativo').length;
-    const totalSessoes = data.reduce((acc, p) => acc + (Number(p.sessoes_concluidas) || 0), 0);
-    document.getElementById('dash-sessoes').textContent = totalSessoes;
-
-    // --- 2. PREENCHE A TABELA DE PACIENTES (admin-table-body) ---
-    const adminTable = document.getElementById('admin-table-body');
-    if (adminTable) {
-      adminTable.innerHTML = data.map(p => `
-        <tr>
-          <td>
-            <div style="font-weight:500">${p.nome}</div>
-            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5)">${p.tipo_ficha}</div>
-          </td>
-          <td>${p.terapeuta_pref || 'Não atribuído'}</td>
-          <td>
-            <div style="font-size:0.75rem;margin-bottom:4px">${p.sessoes_concluidas || 0}/12</div>
-            <div class="progress-bar"><div class="progress-fill" style="width:${((p.sessoes_concluidas || 0)/12)*100}%"></div></div>
-          </td>
-          <td><span class="status-badge status-${(p.status || 'pendente').toLowerCase()}">${p.status || 'Pendente'}</span></td>
-          <td><button class="btn-secondary" style="padding:4px 8px" onclick="openPatientDetails('${p.id}')">Ver</button></td>
-        </tr>
-      `).join('');
+    if (data) {
+      patients = data; // Atualiza a lista local
+      if (typeof refreshAdmin === 'function') refreshAdmin(); 
+      if (typeof renderPatients === 'function') renderPatients();
+      showToast('✅ Dados sincronizados!');
     }
-
-    // --- 3. PREENCHE A TABELA DE FICHAS (fichas-table-body) ---
-    const fichasTable = document.getElementById('fichas-table-body');
-    if (fichasTable) {
-      fichasTable.innerHTML = data.map(p => `
-        <tr>
-          <td>${p.nome}</td>
-          <td>${p.tipo_ficha}</td>
-          <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
-          <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.queixa || '-'}</td>
-          <td>${p.terapeuta_pref || '-'}</td>
-          <td><button class="btn-secondary" onclick="viewFullFicha('${p.id}')">Abrir</button></td>
-        </tr>
-      `).join('');
-    }
-
   } catch (err) {
-    console.error("Erro ao carregar dados do admin:", err);
+    console.error('Erro ao buscar dados:', err);
+    showToast('❌ Erro ao carregar fichas.');
   }
 }
+
+// ══ LOGIN DO ADMINISTRADOR ══
+function loginAdmin() {
+  const campoSenha = document.getElementById('senha-admin');
+  const senhaDigitada = campoSenha ? campoSenha.value : '';
+
+  if (senhaDigitada === 'PTT2026') {
+    closeOverlay('modal-senha');
+    goToScreen('screen-admin');
+    carregarFichasDoBanco(); // Puxa os dados assim que entra
+    if(campoSenha) campoSenha.value = ''; 
+  } else {
+    showToast('❌ Senha incorreta!');
+  }
+}
+
+// ══ UTILS ══
+function showToast(msg){const t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}}
+function toggleDotsMenu(){const menu=document.getElementById('dots-menu'),btn=document.getElementById('dots-btn');const isOpen=menu.style.display==='block';menu.style.display=isOpen?'none':'block';btn.style.color=isOpen?'rgba(255,255,255,.35)':'white';btn.style.background=isOpen?'rgba(255,255,255,.06)':'rgba(255,255,255,.12)';}
+function closeDotsMenu(){const menu=document.getElementById('dots-menu'),btn=document.getElementById('dots-btn');if(menu){menu.style.display='none';btn.style.color='rgba(255,255,255,.35)';btn.style.background='rgba(255,255,255,.06)';}}
+document.addEventListener('click',e=>{if(!e.target.closest('#dots-btn')&&!e.target.closest('#dots-menu'))closeDotsMenu();});
+
+// ══ INICIALIZAÇÃO ÚNICA ══
+(async()=>{
+  await loadData();
+  // Carrega as fichas do banco logo de cara se você quiser
+  await carregarFichasDoBanco(); 
+  
+  const dK = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+  if(calState.admin) calState.admin.selected = dK;
+  if(calState.t) calState.t.selected = dK;
+})();
 </script>
 </body>
 </html>
