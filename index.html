@@ -2,6 +2,65 @@
 <html lang="pt-BR">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+// 1. Declare esta variável lá no topo do seu <script>, fora de qualquer função:
+// let currentPatientId = null; 
+
+// ══ SALVAR ATRIBUIÇÃO NO SUPABASE ══
+async function saveAssignment() {
+  const selectEl = document.getElementById('select-terapeuta-modal');
+  const tId = selectEl ? selectEl.value : null;
+
+  if (!currentPatientId) {
+    showToast('❌ Erro: Selecione um paciente primeiro.');
+    return;
+  }
+
+  try {
+    showToast('⏳ Salvando no banco...');
+
+    const { error } = await db
+      .from('fichas_triagem')
+      .update({ therapistId: tId }) // Verifique se o nome da coluna é este mesmo no Supabase
+      .eq('id', currentPatientId);
+
+    if (error) throw error;
+
+    showToast('✅ Terapeuta atualizado!');
+    closeOverlay('modal-assign'); // Fecha o modal
+    await carregarFichasDoBanco(); // Atualiza a lista na tela
+
+  } catch (err) {
+    console.error('Erro ao salvar:', err);
+    showToast('❌ Erro ao salvar alteração.');
+  }
+}
+
+// ══ MELHORIA NA CARGA INICIAL (Para evitar o erro da imagem) ══
+async function carregarFichasDoBanco() {
+  try {
+    const { data, error } = await db
+      .from('fichas_triagem')
+      .select('*');
+
+    if (error) {
+      // Se der erro de RLS ou política, ele avisa no console
+      console.error('Erro Supabase:', error.message);
+      throw error;
+    }
+
+    if (data) {
+      patients = data;
+      refreshAdmin();
+      // Removi o toast de sucesso aqui para não poluir a tela inicial
+    }
+  } catch (err) {
+    console.error('Falha na conexão:', err);
+    // Só mostra o erro se não for apenas o banco vazio
+    if (err.message !== 'Fetch error') {
+       showToast('❌ Erro de conexão com o banco.');
+    }
+  }
+}
   <script>
     const supabaseUrl = 'https://smowmmduquzmpqpcuttw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3dtbWR1cXV6bXBxcGN1dHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDIxNzIsImV4cCI6MjA5MjcxODE3Mn0.W4VKnwvlkdNwc0Ib7aRDMRwTlSyqa9pK2o0qWWu_Qj8';
