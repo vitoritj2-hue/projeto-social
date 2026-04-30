@@ -1456,47 +1456,160 @@ function confirmReset(){document.getElementById('modal-reset').classList.add('op
 async function resetAll(){patients=[];appointments=[];therapists=[];adminNotifications=[];try{if(window.storage)await window.storage.delete(STORAGE_KEY);}catch(e){}closeOverlay('modal-reset');refreshAdmin();showToast('Dados removidos.');}
 
 // ══ ADMIN ══
-function refreshAdmin(){updateMetrics();populateFilterTerapeuta();applyFilters();renderFichasTable(patients);populateContractSelect('admin');renderNotifPanel('admin');}
-function updateMetrics(){document.getElementById('m-total').textContent=patients.length;document.getElementById('m-andamento').textContent=patients.filter(p=>p.status==='andamento').length;document.getElementById('m-final').textContent=patients.filter(p=>p.status==='finalizado').length;document.getElementById('m-terapeutas').textContent=therapists.length;document.getElementById('m-agend').textContent=appointments.length;}
-function statusBadge(s){return{andamento:`<span class="sb sb-yellow"><span class="sd sd-y"></span>Andamento</span>`,finalizado:`<span class="sb sb-green"><span class="sd sd-g"></span>Finalizado</span>`,imprevisto:`<span class="sb sb-red"><span class="sd sd-r"></span>Imprevisto</span>`,obs:`<span class="sb sb-obs"><span class="sd sd-o"></span>Observação</span>`}[s]||'';}
-function setStatusFilter(s){activeStatusFilter=s;['all','andamento','finalizado','imprevisto','obs'].forEach(x=>{const c=document.getElementById('chip-'+x);if(!c)return;c.className='filter-chip';if(x===s)c.classList.add('active-'+x);});applyFilters();}
-function applyFilters(){
-  const q=(document.getElementById('search-q')?.value||'').toLowerCase().trim();
-  const tipo=document.getElementById('filter-tipo')?.value||'';
-  const tId=document.getElementById('filter-terapeuta')?.value||'';
-  const sess=document.getElementById('filter-sessoes')?.value||'';
-  let res=patients.filter(p=>{
-    if(activeStatusFilter!=='all'&&p.status!==activeStatusFilter)return false;
-    if(tipo&&p.tipo!==tipo)return false;
-    if(tId==='none'&&p.therapistId)return false;
-    if(tId&&tId!=='none'&&p.therapistId!==tId)return false;
-    if(sess==='0'&&p.sessoes!==0)return false;
-    if(sess==='1-3'&&(p.sessoes<1||p.sessoes>3))return false;
-    if(sess==='4-5'&&(p.sessoes<4||p.sessoes>5))return false;
-    if(sess==='6'&&p.sessoes<6)return false;
-    if(q){const t=therapists.find(x=>x.id===p.therapistId);if(![p.nome,p.queixa,p.tel,p.email,p.tipo,(p.sintomas||[]).join(' '),t?.nome||''].join(' ').toLowerCase().includes(q))return false;}
-    return true;
-  });
-  const c=document.getElementById('search-results-count'),l=document.getElementById('table-count-label');
-  if(c)c.textContent=res.length===patients.length?'Mostrando todos ('+patients.length+')':res.length+' de '+patients.length;
-  if(l)l.textContent=res.length+' Paciente(s)';
-  renderAdminTable(res,q);
+function refreshAdmin() {
+  updateMetrics();
+  populateFilterTerapeuta();
+  applyFilters(); 
+  populateContractSelect('admin');
+  renderNotifPanel('admin');
 }
-function clearFilters(){document.getElementById('search-q').value='';document.getElementById('filter-tipo').value='';document.getElementById('filter-terapeuta').value='';document.getElementById('filter-sessoes').value='';setStatusFilter('all');}
-function populateFilterTerapeuta(){const sel=document.getElementById('filter-terapeuta');if(!sel)return;const cur=sel.value;sel.innerHTML='<option value="">Todos</option><option value="none">Sem terapeuta</option>';therapists.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.nome;sel.appendChild(o);});if(cur)sel.value=cur;}
-function hl(text,q){if(!q||!text)return text||'—';return String(text).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<span class="highlight">$1</span>');}
-function renderAdminTable(list,q=''){const tb=document.getElementById('admin-table-body');if(!tb)return;if(!list.length){tb.innerHTML='<tr class="empty-row"><td colspan="5">Nenhum paciente encontrado.</td></tr>';return;}tb.innerHTML=list.map(p=>{const t=therapists.find(x=>x.id===p.therapistId);const bar=`<div style="display:flex;align-items:center;gap:5px"><span style="font-size:.76rem;font-weight:600;color:var(--text)">${p.sessoes}/6</span><div style="flex:1;height:3px;background:var(--bg4);border-radius:50px;min-width:32px"><div style="width:${Math.round(p.sessoes/6*100)}%;height:100%;border-radius:50px;background:var(--grad)"></div></div></div>`;return`<tr><td><strong>${hl(p.nome,q)}</strong><br><span style="font-size:.7rem;color:var(--text3)">${p.tipo}</span></td><td>${t?hl(t.nome,q):'<span style="color:var(--text3);font-size:.76rem">Não atribuído</span>'}</td><td style="min-width:80px">${bar}</td><td>${statusBadge(p.status)}</td><td><button class="link-btn" onclick="openFicha('${p.id}')">Ficha</button> <button class="link-btn" style="color:var(--teal)" onclick="openAssignFor('${p.id}')">Atribuir</button></td></tr>`;}).join('');}
-function renderFichasTable(list){const tb=document.getElementById('fichas-table-body');if(!tb)return;if(!list.length){tb.innerHTML='<tr class="empty-row"><td colspan="6">Nenhuma ficha.</td></tr>';return;}tb.innerHTML=list.map(p=>{const t=therapists.find(x=>x.id===p.therapistId);return`<tr><td><strong>${p.nome}</strong></td><td>${p.tipo}</td><td>${p.data}</td><td>${(p.sintomas||[]).slice(0,3).join(', ')||'—'}</td><td>${t?t.nome:'—'}</td><td><button class="link-btn" onclick="openFicha('${p.id}')">Ver</button></td></tr>`;}).join('');}
-function filterFichasTable(v){renderFichasTable(patients.filter(p=>p.nome.toLowerCase().includes(v.toLowerCase())));}
-function openFicha(id){
-  const p=patients.find(x=>x.id===id);if(!p)return;
-  const t=therapists.find(x=>x.id===p.therapistId);
-  document.getElementById('mf-name').textContent=p.nome;
-  const rows=p.tipo==='Adulto'
-    ?[['Tipo',p.tipo],['Entrada',p.data],['Sexo',p.sexo||'—'],['Telefone',p.tel],['E-mail',p.email||'—'],['Estado civil',p.ecivil||'—'],['Cidade',p.cidade||'—'],['CPF',p.cpf||'—'],['Queixa',p.queixa],['Sintomas',(p.sintomas||[]).join(', ')||'—'],['Terapia anterior',p.terapia||'—'],['Medicação',p.med||'—'],['Religião',p.religiao||'—'],['Renda',p.renda||'—'],['Auxílio',p.auxilio||'—'],['Motivação',p.motivacao||'—'],['Expectativa',p.expectativa||'—'],['Dias pref.',p.dias||'—'],['Período',p.periodo||'—'],['Pref. Terapeuta',p.preferenciaT||'—'],['Terapeuta',t?t.nome:'Não atribuído'],['Status',p.status],['Sessões',p.sessoes+'/6']]
-    :[['Tipo',p.tipo],['Entrada',p.data],['Sexo',p.sexo||'—'],['Telefone',p.tel],['E-mail',p.email||'—'],['Cidade',p.cidade||'—'],['Reside com',p.reside||'—'],['Escola',p.escola||'—'],['Responsável',(p.resp||'—')+' ('+p.parent+')'],['Queixa',p.queixa],['Histórico',p.hist||'—'],['Sintomas',(p.sintomas||[]).join(', ')||'—'],['Religião',p.religiao||'—'],['Renda',p.renda||'—'],['Auxílio',p.auxilio||'—'],['Motivação',p.motivacao||'—'],['Expectativa',p.expectativa||'—'],['Pref. Terapeuta',p.preferenciaT||'—'],['Terapeuta',t?t.nome:'Não atribuído'],['Status',p.status],['Sessões',p.sessoes+'/6']];
-  document.getElementById('mf-body').innerHTML=rows.map(([k,v])=>`<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`).join('');
-  document.getElementById('modal-ficha').classList.add('open');
+
+function updateMetrics() {
+  document.getElementById('m-total').textContent = patients.length;
+  document.getElementById('m-andamento').textContent = patients.filter(p => p.status === 'andamento').length;
+  document.getElementById('m-final').textContent = patients.filter(p => p.status === 'finalizado').length;
+  document.getElementById('m-terapeutas').textContent = therapists.length;
+  document.getElementById('m-agend').textContent = appointments.length;
+}
+
+function applyFilters() {
+  const q = (document.getElementById('search-q')?.value || '').toLowerCase().trim();
+  const tipo = document.getElementById('filter-tipo')?.value || '';
+  const tId = document.getElementById('filter-terapeuta')?.value || '';
+
+  const res = patients.filter(p => {
+    const matchQ = !q || (p.nome || '').toLowerCase().includes(q) || (p.tel || '').includes(q);
+    const matchTipo = !tipo || p.tipo === tipo;
+    const matchTid = !tId || p.therapistId === tId;
+    const matchStatus = activeStatusFilter === 'all' || p.status === activeStatusFilter;
+    return matchQ && matchTipo && matchTid && matchStatus;
+  });
+
+  // Atualiza as duas tabelas com o resultado filtrado
+  renderAdminTable(res, q);
+  renderFichasTable(res);
+}
+
+function renderAdminTable(list, q = '') {
+  const tb = document.getElementById('admin-table-body');
+  if (!tb) return;
+  if (!list.length) {
+    tb.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum paciente encontrado.</td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map(p => {
+    const t = therapists.find(x => x.id === p.therapistId);
+    const bar = `<div style="display:flex;align-items:center;gap:5px"><span style="font-size:.76rem;font-weight:600;color:var(--text)">${p.sessoes}/6</span><div style="flex:1;height:3px;background:var(--bg4);border-radius:50px;min-width:32px"><div style="width:${Math.round((p.sessoes || 0) / 6 * 100)}%;height:100%;border-radius:50px;background:var(--grad)"></div></div></div>`;
+    return `<tr>
+      <td><strong>${hl(p.nome, q)}</strong><br><span style="font-size:.7rem;color:var(--text3)">${p.tipo}</span></td>
+      <td>${t ? hl(t.nome, q) : '<span style="color:var(--text3);font-size:.76rem">Não atribuído</span>'}</td>
+      <td style="min-width:80px">${bar}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td>
+        <button class="link-btn" onclick="openFicha('${p.id}')">Ficha</button> 
+        <button class="link-btn" style="color:var(--teal)" onclick="openAssignFor('${p.id}')">Atribuir</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFichasTable(list) {
+  const tb = document.getElementById('fichas-table-body');
+  if (!tb) return;
+  if (!list.length) {
+    tb.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma ficha encontrada.</td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map(p => {
+    const t = therapists.find(x => x.id === p.therapistId);
+    return `<tr>
+      <td><strong>${p.nome || 'Sem Nome'}</strong></td>
+      <td>${p.tipo || '—'}</td>
+      <td>${p.data || '—'}</td>
+      <td>${(Array.isArray(p.sintomas) ? p.sintomas : []).slice(0, 3).join(', ') || '—'}</td>
+      <td>${t ? t.nome : '—'}</td>
+      <td><button class="link-btn" onclick="openFicha('${p.id}')">Ver Detalhes</button></td>
+    </tr>`;
+  }).join('');
+}
+// Gera o "selo" colorido de status na tabela
+function statusBadge(s) {
+  const statusMap = {
+    'andamento': `<span class="sb sb-yellow"><span class="sd sd-y"></span>Andamento</span>`,
+    'finalizado': `<span class="sb sb-green"><span class="sd sd-g"></span>Finalizado</span>`,
+    'imprevisto': `<span class="sb sb-red"><span class="sd sd-r"></span>Imprevisto</span>`,
+    'obs': `<span class="sb sb-obs"><span class="sd sd-o"></span>Observação</span>`
+  };
+  return statusMap[s] || `<span class="sb" style="background:#eee; color:#666">Pendente</span>`;
+}
+
+// Abre o modal para atribuir um terapeuta ao paciente
+function openAssignFor(id) {
+  const p = patients.find(x => String(x.id) === String(id));
+  if (!p) return;
+
+  // Se você tiver um modal específico para isso, os IDs devem bater:
+  const nameEl = document.getElementById('assign-patient-name');
+  if (nameEl) nameEl.textContent = p.nome;
+  
+  // Guarda o ID do paciente que estamos editando globalmente ou num input escondido
+  currentPatientId = id; 
+
+  const modal = document.getElementById('modal-assign');
+  if (modal) modal.classList.add('open');
+}
+
+// Filtro rápido por botões de status (chips)
+function setStatusFilter(s) {
+  activeStatusFilter = s;
+  // Atualiza a aparência visual dos botões de filtro
+  ['all', 'andamento', 'finalizado', 'imprevisto', 'obs'].forEach(x => {
+    const c = document.getElementById('chip-' + x);
+    if (!c) return;
+    c.className = 'filter-chip';
+    if (x === s) c.classList.add('active-' + x);
+  });
+  applyFilters(); // Re-filtra a tabela
+}
+
+// ══ SALVAR ATRIBUIÇÃO NO BANCO DE DADOS ══
+async function saveAssignment() {
+  const selectEl = document.getElementById('select-terapeuta-modal');
+  const tId = selectEl ? selectEl.value : null;
+
+  if (!currentPatientId) {
+    showToast('❌ Erro: Nenhum paciente selecionado.');
+    return;
+  }
+
+  if (!tId) {
+    showToast('⚠️ Selecione um terapeuta.');
+    return;
+  }
+
+  try {
+    showToast('⏳ Salvando...');
+
+    const { error } = await db
+      .from('fichas_triagem')
+      .update({ therapistId: tId }) // Nome da coluna no seu Supabase
+      .eq('id', currentPatientId);
+
+    if (error) throw error;
+
+    showToast('✅ Terapeuta atribuído com sucesso!');
+    
+    // Fecha o modal (ajuste o ID se necessário)
+    const modal = document.getElementById('modal-assign');
+    if (modal) modal.classList.remove('open');
+
+    // Recarrega os dados para atualizar as tabelas e métricas
+    await carregarFichasDoBanco(); 
+
+  } catch (err) {
+    console.error('Erro ao salvar atribuição:', err);
+    showToast('❌ Erro ao salvar: ' + err.message);
+  }
 }
 
 // ══ CONTRATO ══
