@@ -1302,15 +1302,34 @@ function addAdminNotification(icon,cls,title,desc){
   saveData();
 }
 function promptAdminPwd(){document.getElementById('modal-senha').classList.add('open');document.getElementById('senha-nome').value='';document.getElementById('senha-input').value='';document.getElementById('senha-erro').style.display='none';setTimeout(()=>document.getElementById('senha-nome').focus(),100);}
-function confirmarSenha(){
-  const nome=document.getElementById('senha-nome').value.trim();
-  const senha=document.getElementById('senha-input').value;
-  const errEl=document.getElementById('senha-erro');
-  if(!nome){errEl.textContent='Informe seu nome.';errEl.style.display='block';return;}
-  if(senha!=='PTT2026'){errEl.textContent='Senha incorreta.';errEl.style.display='block';document.getElementById('senha-input').value='';return;}
-  errEl.style.display='none';
-  addAdminNotification('🔑','ni-blue',nome+' acessou a administração',new Date().toLocaleString('pt-BR'));
-  closeOverlay('modal-senha');goToScreen('screen-admin');
+function confirmarSenha() {
+  const nome = document.getElementById('senha-nome').value.trim();
+  const senha = document.getElementById('senha-input').value;
+  const errEl = document.getElementById('senha-erro');
+
+  if (!nome) {
+    errEl.textContent = 'Informe seu nome.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (senha !== 'PTT2026') {
+    errEl.textContent = 'Senha incorreta.';
+    errEl.style.display = 'block';
+    document.getElementById('senha-input').value = '';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  addAdminNotification('🔑', 'ni-blue', nome + ' acessou a administração', new Date().toLocaleString('pt-BR'));
+  
+  closeOverlay('modal-senha');
+  goToScreen('screen-admin');
+
+  // 🚀 O SEGREDO ESTÁ AQUI:
+  // Assim que entra no Admin, ele chama o banco de dados.
+  if (typeof carregarFichasDoBanco === 'function') {
+      carregarFichasDoBanco();
+  }
 }
 
 // ══ LOGIN T ══
