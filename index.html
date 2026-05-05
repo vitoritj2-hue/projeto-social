@@ -1162,44 +1162,66 @@ async function submitTriagem() {
   banner.style.display = 'none';
   showToast('🚀 Enviando para o banco de dados...');
 
-  let p;
+  // Montando o objeto exatamente como as colunas do seu Supabase
+  let dadosParaEnviar = {};
+
   if (currentTipo === 'adulto') {
-    p = {
+    dadosParaEnviar = {
       tipo: 'Adulto',
-      nome: gv('a-nome'), nasc: gv('a-nasc'), cpf: gv('a-cpf'), tel: gv('a-tel'),
-      email: gv('a-email'), sexo: gv('a-sexo'), ecivil: gv('a-ecivil'), cidade: gv('a-cidade'),
-      queixa: gv('a-queixa'), terapia: gv('a-terapia'), med: gv('a-med'),
-      sintomas: getSintomas('a-sintomas'), religiao: gv('a-religiao'),
-      renda: gv('a-renda'), auxilio: gv('a-auxilio'),
-      motivacao: gv('a-motivacao'), expectativa: gv('a-expectativa'),
-      dias: gv('a-dias'), periodo: gv('a-periodo'), preferenciaT: gv('a-preferencia-terapeuta'),
+      nome: gv('a-nome'),
+      tel: gv('a-tel'),
+      email: gv('a-email'),
+      cidade: gv('a-cidade'),
+      queixa: gv('a-queixa'),
+      sintomas: getSintomas('a-sintomas'),
+      sexo: gv('a-sexo'),
+      ecivil: gv('a-ecivil'),
+      cpf: gv('a-cpf'),
+      religiao: gv('a-religiao'),
+      renda: gv('a-renda'),
+      auxilio: gv('a-auxilio'),
+      motivacao: gv('a-motivacao'),
+      expectativa: gv('a-expectativa'), // Ajustado para o plural do seu banco
+      terapia: gv('a-terapia'),
+      med: gv('a-med'),
+      dias: gv('a-dias'),
+      periodo: gv('a-periodo'),
+      preferenciaT: gv('a-preferencia-terapeuta'),
       status: 'andamento'
     };
   } else {
-    p = {
+    dadosParaEnviar = {
       tipo: 'Infantil',
-      nome: gv('i-nome'), nasc: gv('i-nasc'), sexo: gv('i-sexo'), escola: gv('i-escola'),
-      reside: gv('i-reside'), cidade: gv('i-cidade'), resp: gv('i-resp'), parent: gv('i-parent'),
-      tel: gv('i-tel'), email: gv('i-email'), queixa: gv('i-queixa'), hist: gv('i-hist'),
-      sintomas: getSintomas('i-sintomas'), religiao: gv('i-religiao'),
-      renda: gv('i-renda'), auxilio: gv('i-auxilio'),
-      motivacao: gv('i-motivacao'), expectativa: gv('i-expectativa'),
+      nome: gv('i-nome'),
+      sexo: gv('i-sexo'),
+      escola: gv('i-escola'),
+      cidade: gv('i-cidade'),
+      resp: gv('i-resp'),
+      tel: gv('i-tel'),
+      email: gv('i-email'),
+      queixa: gv('i-queixa'),
+      hist: gv('i-hist'),
+      sintomas: getSintomas('i-sintomas'),
+      religiao: gv('i-religiao'),
+      renda: gv('i-renda'),
+      auxilio: gv('i-auxilio'),
+      motivacao: gv('i-motivacao'),
+      expectativa: gv('i-expectativa'), // Ajustado para o plural do seu banco
       preferenciaT: gv('i-preferencia-terapeuta'),
       status: 'andamento'
     };
   }
 
   try {
-    // ENVIO PARA O SUPABASE
     const { error } = await db
       .from('fichas_triagem')
-      .insert([p]); // O Supabase mapeia as chaves do objeto para as colunas da tabela
+      .insert([dadosParaEnviar]);
 
     if (error) throw error;
 
     showToast('✅ Ficha enviada com sucesso!');
     
-    // Limpar formulário e voltar ao início
+    // Limpa e volta
     if (typeof carregarFichasDoBanco === 'function') await carregarFichasDoBanco();
     setTimeout(goHome, 1500);
 
@@ -1207,7 +1229,7 @@ async function submitTriagem() {
     console.error('Erro no envio:', err);
     showToast('❌ Erro ao salvar: ' + err.message);
   }
-} // <--- ESSA CHAVE FECHA A FUNÇÃO
+}
 
 // ══ CALENDÁRIO ══
 const pColors=['pill-blue','pill-green','pill-yellow','pill-red'];
